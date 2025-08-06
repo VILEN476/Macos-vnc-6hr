@@ -44,10 +44,6 @@ jobs:
         echo "🔗 VNC connection info:"
         cat tunnels.json | grep -o 'tcp://[0-9a-zA-Z\.:]*'
 
-    - name: Optional: Install Android Studio
-      run: |
-        brew install --cask android-studio || true
-
     - name: Keep session alive for 6 hours
       run: |
         echo "⏳ Session started. VNC is live for 6 hours."
