@@ -1,0 +1,54 @@
+name: macOS GUI via VNC (6 Hour Session)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  macos_vnc:
+    runs-on: macos-latest
+    timeout-minutes: 360  # 6 hours
+
+    steps:
+    - name: Show system info
+      run: |
+        sw_vers
+        uname -a
+        whoami
+
+    - name: Install dependencies
+      run: |
+        brew install --quiet tigervnc ngrok
+        mkdir -p ~/.vnc
+        echo "password" | vncpasswd -f > ~/.vnc/passwd
+        chmod 600 ~/.vnc/passwd
+
+    - name: Start VNC Server
+      run: |
+        echo "#!/bin/bash" > ~/.vnc/xstartup
+        echo "unset SESSION_MANAGER" >> ~/.vnc/xstartup
+        echo "unset DBUS_SESSION_BUS_ADDRESS" >> ~/.vnc/xstartup
+        echo "exec /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal &" >> ~/.vnc/xstartup
+        chmod +x ~/.vnc/xstartup
+        vncserver :1 -geometry 1280x800 -depth 24
+
+    - name: Start ngrok tunnel
+      run: |
+        ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+        ngrok tcp 5901 > ngrok.log &
+        sleep 10
+        cat ngrok.log
+
+    - name: Print ngrok public URL
+      run: |
+        curl -s http://127.0.0.1:4040/api/tunnels > tunnels.json
+        echo "🔗 VNC connection info:"
+        cat tunnels.json | grep -o 'tcp://[0-9a-zA-Z\.:]*'
+
+    - name: Optional: Install Android Studio
+      run: |
+        brew install --cask android-studio || true
+
+    - name: Keep session alive for 6 hours
+      run: |
+        echo "⏳ Session started. VNC is live for 6 hours."
+        sleep 21600  # 6 hours
