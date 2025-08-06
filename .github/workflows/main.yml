@@ -17,7 +17,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        brew install --quiet tigervnc ngrok
+        brew install --quiet tiger-vnc ngrok
         mkdir -p ~/.vnc
         echo "password" | vncpasswd -f > ~/.vnc/passwd
         chmod 600 ~/.vnc/passwd
